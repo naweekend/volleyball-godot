@@ -6,50 +6,41 @@ var JUMP_FORCE = 12.0
 
 var jump_queued = false
 var input_dir = 0.0
-
 @onready var ground_ray: RayCast3D = $GroundRay
 @onready var sphere_001: MeshInstance3D = $"character-red/Sphere_001"
 
 func _ready() -> void:
 	lock_rotation = true
 
-	# Set player color once (not every frame)
-	var mat = StandardMaterial3D.new()
-
+func _physics_process(_delta: float) -> void:
+	# Only handle INPUT here
 	if player_idx == 1:
+		var mat = StandardMaterial3D.new()
 		mat.albedo_color = Color("e16540")
-	else:
+		sphere_001.set_surface_override_material(1, mat)
+		input_dir = Input.get_axis("a", "d")
+		if Input.is_action_just_pressed("w") and ground_ray.is_colliding():
+			jump_queued = true
+	elif player_idx == 2:
+		var mat = StandardMaterial3D.new()
 		mat.albedo_color = Color("55aa55")
+		sphere_001.set_surface_override_material(1, mat)
+		input_dir = Input.get_axis("left", "right")
+		if Input.is_action_just_pressed("up") and ground_ray.is_colliding():
+			jump_queued = true
 
-	sphere_001.set_surface_override_material(1, mat)
-
-
-# Physics movement (NO keyboard input here anymore)
+# This is the "safe zone" for overriding RigidBody physics
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
-
-	# Jump
-	if jump_queued and ground_ray.is_colliding():
+	# 1. Handle Jumping
+	if jump_queued:
+		# Use state.apply_central_impulse instead of the node's method
 		state.apply_central_impulse(Vector3(0, JUMP_FORCE, 0))
 		jump_queued = false
-
-	# Horizontal movement
+	
+	# 2. Handle Snappy Movement
+	# We get the current velocity from the 'state'
 	var v = state.linear_velocity
 	v.x = input_dir * SPEED
+	
+	# Apply it back to the state
 	state.linear_velocity = v
-
-
-# This is called by the server when a packet arrives
-func handle_cmd(cmd: String):
-	match cmd:
-		"LEFT_PRESSED":
-			input_dir = -1
-		"LEFT_RELEASED":
-			if input_dir < 0:
-				input_dir = 0
-		"RIGHT_PRESSED":
-			input_dir = 1
-		"RIGHT_RELEASED":
-			if input_dir > 0:
-				input_dir = 0
-		"JUMP_PRESSED":
-			jump_queued = true

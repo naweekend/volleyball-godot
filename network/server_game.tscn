@@ -3,11 +3,13 @@
 [ext_resource type="Sky" uid="uid://mhkf2odj7c6i" path="res://game/sky/DaySkyHDRI057B_1K.tres" id="1_pwg7h"]
 [ext_resource type="PackedScene" uid="uid://cabdjau2b14vn" path="res://court/court.tscn" id="2_8bly5"]
 [ext_resource type="PackedScene" uid="uid://dlf0f7iqe5d1o" path="res://player/player.tscn" id="3_wxtyj"]
+[ext_resource type="Script" uid="uid://d3f0wlrfxjiul" path="res://player/server_player.gd" id="4_5dpy0"]
 [ext_resource type="PackedScene" uid="uid://do4gl8fc8vtur" path="res://ball/ball.tscn" id="4_ap1lx"]
 [ext_resource type="Script" uid="uid://gchf4fa1ya3y" path="res://game/timer_label.gd" id="5_5dpy0"]
 [ext_resource type="Texture2D" uid="uid://c0usrbcenxypk" path="res://game/arrow.png" id="6_qr1va"]
 [ext_resource type="Script" uid="uid://oo5byl4rhof8" path="res://network/server.gd" id="7_8bly5"]
 [ext_resource type="Script" uid="uid://chmkklfvggfab" path="res://network/data.gd" id="8_wxtyj"]
+[ext_resource type="FontFile" uid="uid://bf4me5l0c4lha" path="res://assets/fonts/BubblegumSans-Regular.ttf" id="9_ap1lx"]
 
 [sub_resource type="Environment" id="Environment_4fuuu"]
 background_mode = 2
@@ -33,9 +35,11 @@ transform = Transform3D(1, 0, 0, 0, 0.9903988, 0.13823973, 0, -0.13823973, 0.990
 
 [node name="Player1" parent="." unique_id=892339590 instance=ExtResource("3_wxtyj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.561, 0)
+script = ExtResource("4_5dpy0")
 
 [node name="Player2" parent="." unique_id=298485372 instance=ExtResource("3_wxtyj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.561, 0)
+script = ExtResource("4_5dpy0")
 player_idx = 2
 
 [node name="Ball" parent="." unique_id=956571147 instance=ExtResource("4_ap1lx")]
@@ -49,15 +53,16 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -28.5
-offset_top = -153.5
-offset_right = 28.5
-offset_bottom = -16.5
+offset_left = -57.0
+offset_top = -226.0
+offset_right = 69.0
+offset_bottom = 8.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_constants/outline_size = 9
-theme_override_font_sizes/font_size = 100
+theme_override_fonts/font = ExtResource("9_ap1lx")
+theme_override_font_sizes/font_size = 200
 text = "0"
 script = ExtResource("5_5dpy0")
 
@@ -83,18 +88,19 @@ script = ExtResource("8_wxtyj")
 
 [node name="ColorRect" type="ColorRect" parent="Data" unique_id=1491136919]
 layout_mode = 0
-offset_right = 640.0
+offset_right = 108.0
 offset_bottom = 23.0
 color = Color(0, 0, 0, 1)
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Data" unique_id=661832936]
 layout_mode = 0
-offset_right = 123.0
+offset_right = 108.0
 offset_bottom = 23.0
 alignment = 1
 
 [node name="FPSLabel" type="Label" parent="Data/HBoxContainer" unique_id=2002712270]
 layout_mode = 2
+theme_override_fonts/font = ExtResource("9_ap1lx")
 text = "FPS: 999"
 
 [node name="PeersLabel" type="Label" parent="Data/HBoxContainer" unique_id=1114224629]
