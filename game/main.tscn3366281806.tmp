@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://bac6tsncnqa4a"]
+
+[ext_resource type="PackedScene" uid="uid://bivv5cmy6k6sj" path="res://game/game.tscn" id="1_oa506"]
+[ext_resource type="Script" uid="uid://b2f8kr0dr4t2s" path="res://game/game_manager.gd" id="2_xtpaf"]
+[ext_resource type="PackedScene" uid="uid://beswfbpke1yb0" path="res://game/ui_overlay.tscn" id="3_emt18"]
+[ext_resource type="Script" uid="uid://clnyevvxib0h7" path="res://game/canvas_layer.gd" id="3_vop5m"]
+
+[node name="Main" type="Node3D" unique_id=1272691978]
+
+[node name="Game" parent="." unique_id=604635633 instance=ExtResource("1_oa506")]
+
+[node name="GameManager" type="Node" parent="." unique_id=1756015482]
+script = ExtResource("2_xtpaf")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=860861651]
+script = ExtResource("3_vop5m")
+
+[node name="UIOverlay" parent="CanvasLayer" unique_id=1668927484 instance=ExtResource("3_emt18")]
+
+[node name="Player2Label" parent="CanvasLayer/UIOverlay" index="1" unique_id=1138395666]
+anchor_top = 0.05
+anchor_right = 0.739
+anchor_bottom = 0.194
+offset_top = 0.0
+offset_right = 0.039978027
+offset_bottom = -0.12000275
+
+[editable path="CanvasLayer/UIOverlay"]

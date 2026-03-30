@@ -1,0 +1,347 @@
+[gd_scene format=3 uid="uid://cabdjau2b14vn"]
+
+[ext_resource type="PackedScene" uid="uid://rm7vfgr7lg8r" path="res://assets/models/net.glb" id="2_q2sr8"]
+[ext_resource type="Texture2D" uid="uid://mwqnre44if0v" path="res://assets/textures/sand/Ground055L_4K_Color.jpg" id="2_ruljl"]
+[ext_resource type="Texture2D" uid="uid://ck63t0wfwd3eq" path="res://assets/textures/sand/Ground055L_4K_Displacement.jpg" id="3_ruljl"]
+[ext_resource type="PackedScene" uid="uid://w7mp4b6tpn56" path="res://assets/models/character-blue-chilling.glb" id="5_k3uxl"]
+[ext_resource type="Texture2D" uid="uid://dxflr7xyfbanf" path="res://assets/models/palm-tree.png" id="5_msx4f"]
+[ext_resource type="Script" uid="uid://rdbxib5pyx38" path="res://court/left_goal.gd" id="5_oepbf"]
+[ext_resource type="Script" uid="uid://cru3h2nei5wv7" path="res://court/right_goal.gd" id="6_oepbf"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a26s7"]
+albedo_texture = ExtResource("2_ruljl")
+normal_enabled = true
+heightmap_enabled = true
+heightmap_scale = 5.99
+heightmap_texture = ExtResource("3_ruljl")
+uv1_scale = Vector3(-0.23, -0.23, -0.23)
+
+[sub_resource type="Shader" id="Shader_ruljl"]
+code = "// NOTE: Shader automatically converted from Godot Engine 4.6.1.stable.mono's StandardMaterial3D.
+
+shader_type spatial;
+render_mode blend_mix, depth_draw_always, cull_back, diffuse_burley, specular_schlick_ggx;
+
+uniform vec4 albedo : source_color;
+uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_enable;
+uniform ivec2 albedo_texture_size;
+uniform float point_size : hint_range(0.1, 128.0, 0.1);
+
+uniform float roughness : hint_range(0.0, 1.0);
+uniform sampler2D texture_metallic : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform vec4 metallic_texture_channel;
+uniform sampler2D texture_roughness : hint_roughness_r, filter_linear_mipmap, repeat_enable;
+
+uniform float specular : hint_range(0.0, 1.0, 0.01);
+uniform float metallic : hint_range(0.0, 1.0, 0.01);
+
+uniform sampler2D texture_refraction : filter_linear_mipmap, repeat_enable;
+uniform float refraction : hint_range(-1.0, 1.0, 0.001);
+uniform vec4 refraction_texture_channel;
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;
+uniform sampler2D depth_texture : hint_depth_texture, repeat_disable, filter_nearest;
+
+uniform sampler2D texture_normal : hint_roughness_normal, filter_linear_mipmap, repeat_enable;
+uniform float normal_scale : hint_range(-16.0, 16.0);
+varying vec3 uv1_triplanar_pos;
+
+uniform float uv1_blend_sharpness : hint_range(0.0, 150.0, 0.001);
+varying vec3 uv1_power_normal;
+
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+void vertex() {
+	vec3 normal = NORMAL;
+
+	TANGENT = vec3(0.0, 0.0, -1.0) * abs(normal.x);
+	TANGENT += vec3(1.0, 0.0, 0.0) * abs(normal.y);
+	TANGENT += vec3(1.0, 0.0, 0.0) * abs(normal.z);
+	TANGENT = normalize(TANGENT);
+
+	BINORMAL = vec3(0.0, 1.0, 0.0) * abs(normal.x);
+	BINORMAL += vec3(0.0, 0.0, -1.0) * abs(normal.y);
+	BINORMAL += vec3(0.0, 1.0, 0.0) * abs(normal.z);
+	BINORMAL = normalize(BINORMAL);
+
+	// UV1 Triplanar: Enabled
+	uv1_power_normal = pow(abs(NORMAL), vec3(uv1_blend_sharpness));
+	uv1_triplanar_pos = VERTEX * uv1_scale + uv1_offset + TIME * 0.06;
+	uv1_power_normal /= dot(uv1_power_normal, vec3(1.0));
+	uv1_triplanar_pos *= vec3(1.0, -1.0, 1.0);
+}
+
+vec4 triplanar_texture(sampler2D p_sampler, vec3 p_weights, vec3 p_triplanar_pos) {
+	vec4 samp = vec4(0.0);
+	samp += texture(p_sampler, p_triplanar_pos.xy) * p_weights.z;
+	samp += texture(p_sampler, p_triplanar_pos.xz) * p_weights.y;
+	samp += texture(p_sampler, p_triplanar_pos.zy * vec2(-1.0, 1.0)) * p_weights.x;
+	return samp;
+}
+
+void fragment() {
+	vec4 albedo_tex = triplanar_texture(texture_albedo, uv1_power_normal, uv1_triplanar_pos);
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+
+	float metallic_tex = dot(triplanar_texture(texture_metallic, uv1_power_normal, uv1_triplanar_pos), metallic_texture_channel);
+	METALLIC = metallic_tex * metallic;
+	SPECULAR = specular;
+
+	vec4 roughness_texture_channel = vec4(1.0, 0.0, 0.0, 0.0);
+	float roughness_tex = dot(triplanar_texture(texture_roughness, uv1_power_normal, uv1_triplanar_pos), roughness_texture_channel);
+	ROUGHNESS = roughness_tex * roughness;
+
+	// Normal Map: Enabled
+	NORMAL_MAP = triplanar_texture(texture_normal, uv1_power_normal, uv1_triplanar_pos).rgb;
+	NORMAL_MAP_DEPTH = normal_scale;
+
+	// Refraction: Enabled (with normal map texture)
+	vec3 unpacked_normal = NORMAL_MAP;
+	unpacked_normal.xy = unpacked_normal.xy * 2.0 - 1.0;
+	unpacked_normal.z = sqrt(max(0.0, 1.0 - dot(unpacked_normal.xy, unpacked_normal.xy)));
+	vec3 ref_normal = normalize(mix(
+			NORMAL,
+			TANGENT * unpacked_normal.x + BINORMAL * unpacked_normal.y + NORMAL * unpacked_normal.z,
+			NORMAL_MAP_DEPTH));
+	vec2 ref_ofs = SCREEN_UV - ref_normal.xy * dot(triplanar_texture(texture_refraction, uv1_power_normal, uv1_triplanar_pos), refraction_texture_channel) * refraction;
+
+	float ref_amount = 1.0 - albedo.a * albedo_tex.a;
+
+	float refraction_depth_tex = textureLod(depth_texture, ref_ofs, 0.0).r;
+	vec4 ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, refraction_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, refraction_depth_tex, 1.0);
+	vec4 refraction_view_pos = INV_PROJECTION_MATRIX * ndc;
+	refraction_view_pos.xyz /= refraction_view_pos.w;
+
+	// If the depth buffer is lower then the model's Z position, use the refracted UV, otherwise use the normal screen UV.
+	// At low depth differences, decrease refraction intensity to avoid sudden discontinuities.
+	EMISSION += textureLod(screen_texture, mix(SCREEN_UV, ref_ofs, smoothstep(0.0, 1.0, VERTEX.z - refraction_view_pos.z)), ROUGHNESS * 8.0).rgb * ref_amount * EXPOSURE;
+	ALBEDO *= 1.0 - ref_amount;
+	// Force transparency on the material (required for refraction).
+	ALPHA = 1.0;
+}
+"
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ruljl"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_8bolp"]
+noise = SubResource("FastNoiseLite_ruljl")
+seamless = true
+as_normal_map = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8bolp"]
+render_priority = 0
+shader = SubResource("Shader_ruljl")
+shader_parameter/albedo = Color(0, 0.48264486, 0.83721304, 0.8)
+shader_parameter/albedo_texture_size = Vector2i(0, 0)
+shader_parameter/point_size = 1.0
+shader_parameter/roughness = 0.0
+shader_parameter/metallic_texture_channel = Vector4(1, 0, 0, 0)
+shader_parameter/specular = 0.5
+shader_parameter/metallic = 0.0
+shader_parameter/refraction = 0.05
+shader_parameter/refraction_texture_channel = Vector4(1, 0, 0, 0)
+shader_parameter/texture_normal = SubResource("NoiseTexture2D_8bolp")
+shader_parameter/normal_scale = 1.0
+shader_parameter/uv1_blend_sharpness = 1.0
+shader_parameter/uv1_scale = Vector3(-0.44, -0.44, -0.44)
+shader_parameter/uv1_offset = Vector3(0, 0, 0)
+shader_parameter/uv2_scale = Vector3(1, 1, 1)
+shader_parameter/uv2_offset = Vector3(0, 0, 0)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ruljl"]
+material = SubResource("ShaderMaterial_8bolp")
+size = Vector3(5, 5, 5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8bolp"]
+size = Vector3(19.397552, 1, 24.005371)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_msx4f"]
+size = Vector3(19.896667, 1, 24.005371)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_k3uxl"]
+size = Vector3(0.35595703, 44.492737, 28.004639)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_oepbf"]
+size = Vector3(0.35595703, 45.32025, 28.004639)
+
+[node name="Court" type="Node3D" unique_id=1793460509]
+
+[node name="net" parent="." unique_id=1828819566 instance=ExtResource("2_q2sr8")]
+transform = Transform3D(0.98, 0, 0, 0, 0.98, 0, 0, 0, 0.98, 0, 1.4421092, 0)
+
+[node name="Ground" type="CSGBox3D" parent="." unique_id=814448176]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.050546646, 0.036173247, 0.517807)
+use_collision = true
+size = Vector3(500, 0.2, 100)
+material = SubResource("StandardMaterial3D_a26s7")
+
+[node name="Water" type="MeshInstance3D" parent="." unique_id=1272666967]
+transform = Transform3D(-100, 0, -8.742278e-06, 0, -4.145, 0, -8.742278e-06, 0, 100, 0, -12.348417, -300.4084)
+mesh = SubResource("BoxMesh_ruljl")
+
+[node name="Trees" type="Node3D" parent="." unique_id=875661894]
+
+[node name="Sprite3D" type="Sprite3D" parent="Trees" unique_id=1491758947]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.073437, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D2" type="Sprite3D" parent="Trees" unique_id=223037316]
+transform = Transform3D(0.97169775, 0, 0.23622766, 0, 1, 0, -0.23622766, 0, 0.97169775, -29.634396, 8.062541, -31.660326)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D3" type="Sprite3D" parent="Trees" unique_id=1350802418]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, -41.204094, 7.6876745, -29.339258)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D22" type="Sprite3D" parent="Trees" unique_id=74724143]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, -41.204094, 7.6876745, -23.70241)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D4" type="Sprite3D" parent="Trees" unique_id=571440774]
+transform = Transform3D(0.84616524, 0, 0.5329206, 0, 1, 0, -0.5329206, 0, 0.84616524, -46.151, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D23" type="Sprite3D" parent="Trees" unique_id=210795310]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.457325, 7.6876745, -28.701817)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D24" type="Sprite3D" parent="Trees" unique_id=1951107461]
+transform = Transform3D(0.97169775, 0, 0.23622766, 0, 1, 0, -0.23622766, 0, 0.97169775, 17.896366, 8.062541, -36.64896)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D25" type="Sprite3D" parent="Trees" unique_id=860462527]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, 6.326668, 7.6876745, -34.327892)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D26" type="Sprite3D" parent="Trees" unique_id=721577404]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, 6.326668, 7.6876745, -28.691044)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D27" type="Sprite3D" parent="Trees" unique_id=68503260]
+transform = Transform3D(0.84616524, 0, 0.5329206, 0, 1, 0, -0.5329206, 0, 0.84616524, 1.3797607, 7.6876745, -28.701817)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D28" type="Sprite3D" parent="Trees" unique_id=1906457427]
+transform = Transform3D(0.96294636, 0, -0.26969302, 0, 1, 0, 0.26969302, 0, 0.96294636, 47.021408, 7.6876745, -27.621077)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D29" type="Sprite3D" parent="Trees" unique_id=1441271623]
+transform = Transform3D(0.99940175, 0, -0.034585536, 0, 1, 0, 0.034585536, 0, 0.99940175, 53.439255, 8.062541, -34.076572)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D30" type="Sprite3D" parent="Trees" unique_id=1246817504]
+transform = Transform3D(0.9619845, 0.0028143506, -0.2730891, -0.0038466798, 0.9999874, -0.003244833, 0.27307653, 0.00417197, 0.9619833, 41.672283, 7.6876745, -34.961773)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D31" type="Sprite3D" parent="Trees" unique_id=1572916643]
+transform = Transform3D(0.9619845, 0.0028143506, -0.2730891, -0.0038466798, 0.9999874, -0.003244833, 0.27307653, 0.00417197, 0.9619833, 40.15206, 7.6876745, -29.53379)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D32" type="Sprite3D" parent="Trees" unique_id=1864637275]
+transform = Transform3D(0.9585367, 0, 0.2849691, 0, 1, 0, -0.2849691, 0, 0.9585367, 35.39136, 7.6876745, -30.878311)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D5" type="Sprite3D" parent="Trees" unique_id=994397808]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.489094, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D6" type="Sprite3D" parent="Trees" unique_id=454662744]
+transform = Transform3D(0.9961688, 0, 0.08745132, 0, 1, 0, -0.08745132, 0, 0.9961688, 61.928135, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D7" type="Sprite3D" parent="Trees" unique_id=1157102597]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, 50.358437, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D8" type="Sprite3D" parent="Trees" unique_id=579427489]
+transform = Transform3D(0.9721086, 0, -0.23453134, 0, 1, 0, 0.23453134, 0, 0.9721086, 45.41153, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D9" type="Sprite3D" parent="Trees" unique_id=1227123286]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.686451, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D10" type="Sprite3D" parent="Trees" unique_id=1463846226]
+transform = Transform3D(0.9961688, 0, 0.08745132, 0, 1, 0, -0.08745132, 0, 0.9961688, 33.125492, 7.6876745, -27.781818)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D11" type="Sprite3D" parent="Trees" unique_id=994218335]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, 21.55307, 7.708226, -23.673107)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D12" type="Sprite3D" parent="Trees" unique_id=711484942]
+transform = Transform3D(0.99987024, 0, 0.016108721, 0, 1, 0, -0.016108721, 0, 0.99987024, 16.608887, 7.6876745, -31.222439)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D13" type="Sprite3D" parent="Trees" unique_id=1286658852]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.1075783, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D14" type="Sprite3D" parent="Trees" unique_id=71717312]
+transform = Transform3D(0.9961688, 0, 0.08745132, 0, 1, 0, -0.08745132, 0, 0.9961688, 1.3314629, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D15" type="Sprite3D" parent="Trees" unique_id=52304023]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, -10.238235, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D16" type="Sprite3D" parent="Trees" unique_id=1077976832]
+transform = Transform3D(0.84616524, 0, 0.5329206, 0, 1, 0, -0.5329206, 0, 0.84616524, -15.1851425, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D17" type="Sprite3D" parent="Trees" unique_id=1431244008]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.1075783, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D18" type="Sprite3D" parent="Trees" unique_id=1085688634]
+transform = Transform3D(0.9961688, 0, 0.08745132, 0, 1, 0, -0.08745132, 0, 0.9961688, 1.3314629, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D19" type="Sprite3D" parent="Trees" unique_id=235958735]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, -10.238235, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D21" type="Sprite3D" parent="Trees" unique_id=509665402]
+transform = Transform3D(0.9999864, 0.0038352197, -0.003530024, -0.0038466803, 0.9999875, -0.0032448336, 0.0035175327, 0.0032583727, 0.99998856, -6.562488, 7.6876745, -32.553005)
+texture = ExtResource("5_msx4f")
+
+[node name="Sprite3D20" type="Sprite3D" parent="Trees" unique_id=1988760016]
+transform = Transform3D(0.98862284, 0, 0.15041542, 0, 1, 0, -0.15041542, 0, 0.98862284, -15.1851425, 7.6876745, -23.713182)
+texture = ExtResource("5_msx4f")
+
+[node name="LeftGoal" type="Area3D" parent="." unique_id=1586609676]
+script = ExtResource("5_oepbf")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftGoal" unique_id=1659319841]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.68071, 0, -0.7565918)
+shape = SubResource("BoxShape3D_8bolp")
+
+[node name="RightGoal" type="Area3D" parent="." unique_id=2019176984]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.812397, 0, 0)
+script = ExtResource("6_oepbf")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RightGoal" unique_id=1816540652]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.786007, 0, -0.7565918)
+shape = SubResource("BoxShape3D_msx4f")
+
+[node name="Walls" type="StaticBody3D" parent="." unique_id=1912274411]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls" unique_id=1067214641]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18, 21.745964, -1.769)
+shape = SubResource("BoxShape3D_k3uxl")
+debug_color = Color(0.8258437, 0.22843885, 0.8044588, 0.41960785)
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="Walls" unique_id=628063048]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 22.159721, -1.769)
+shape = SubResource("BoxShape3D_oepbf")
+debug_color = Color(0.8258437, 0.22843885, 0.8044588, 0.41960785)
+
+[node name="Props" type="Node3D" parent="." unique_id=878491807]
+
+[node name="character-blue-chilling" parent="." unique_id=1387825820 instance=ExtResource("5_k3uxl")]
+transform = Transform3D(0.99993914, 0, 0.011030197, 0, 1, 0, -0.011030197, 0, 0.99993914, 24.62916, 0.21678638, -10.223416)
+
+[connection signal="body_entered" from="LeftGoal" to="LeftGoal" method="_on_body_entered"]
+[connection signal="body_entered" from="RightGoal" to="RightGoal" method="_on_body_entered"]

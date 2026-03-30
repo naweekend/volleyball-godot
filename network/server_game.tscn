@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://bnfyy4fvrymac"]
+
+[ext_resource type="Sky" uid="uid://mhkf2odj7c6i" path="res://game/sky/DaySkyHDRI057B_1K.tres" id="1_pwg7h"]
+[ext_resource type="PackedScene" uid="uid://cabdjau2b14vn" path="res://court/court.tscn" id="2_8bly5"]
+[ext_resource type="PackedScene" uid="uid://dlf0f7iqe5d1o" path="res://player/player.tscn" id="3_wxtyj"]
+[ext_resource type="PackedScene" uid="uid://do4gl8fc8vtur" path="res://ball/ball.tscn" id="4_ap1lx"]
+[ext_resource type="Script" uid="uid://gchf4fa1ya3y" path="res://game/timer_label.gd" id="5_5dpy0"]
+[ext_resource type="Texture2D" uid="uid://c0usrbcenxypk" path="res://game/arrow.png" id="6_qr1va"]
+[ext_resource type="Script" uid="uid://oo5byl4rhof8" path="res://network/server.gd" id="7_8bly5"]
+[ext_resource type="Script" uid="uid://chmkklfvggfab" path="res://network/data.gd" id="8_wxtyj"]
+
+[sub_resource type="Environment" id="Environment_4fuuu"]
+background_mode = 2
+sky = ExtResource("1_pwg7h")
+sky_rotation = Vector3(-0.22863813, 0, 0)
+tonemap_mode = 2
+glow_enabled = true
+
+[node name="ServerGame" type="Node3D" unique_id=604635633]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=968352961]
+environment = SubResource("Environment_4fuuu")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1164939962]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+light_energy = 1.3
+shadow_enabled = true
+
+[node name="Court" parent="." unique_id=1793460509 instance=ExtResource("2_8bly5")]
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=608955591]
+transform = Transform3D(1, 0, 0, 0, 0.9903988, 0.13823973, 0, -0.13823973, 0.9903988, 0, 6.157075, 14.559107)
+
+[node name="Player1" parent="." unique_id=892339590 instance=ExtResource("3_wxtyj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.561, 0)
+
+[node name="Player2" parent="." unique_id=298485372 instance=ExtResource("3_wxtyj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1.561, 0)
+player_idx = 2
+
+[node name="Ball" parent="." unique_id=956571147 instance=ExtResource("4_ap1lx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.061883, 10.873183, 0)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=804241886]
+
+[node name="TimerLabel" type="Label" parent="CanvasLayer" unique_id=1056796668]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -28.5
+offset_top = -153.5
+offset_right = 28.5
+offset_bottom = -16.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 9
+theme_override_font_sizes/font_size = 100
+text = "0"
+script = ExtResource("5_5dpy0")
+
+[node name="BallIndicator" type="Sprite3D" parent="CanvasLayer" unique_id=2056315511]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.477657, 0)
+pixel_size = 0.02
+texture = ExtResource("6_qr1va")
+
+[node name="Timer" type="Timer" parent="." unique_id=1387498386]
+wait_time = 3.5
+one_shot = true
+autostart = true
+
+[node name="Server" type="Node" parent="." unique_id=169902608]
+script = ExtResource("7_8bly5")
+
+[node name="Data" type="Control" parent="." unique_id=612001899]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("8_wxtyj")
+
+[node name="ColorRect" type="ColorRect" parent="Data" unique_id=1491136919]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 23.0
+color = Color(0, 0, 0, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Data" unique_id=661832936]
+layout_mode = 0
+offset_right = 123.0
+offset_bottom = 23.0
+alignment = 1
+
+[node name="FPSLabel" type="Label" parent="Data/HBoxContainer" unique_id=2002712270]
+layout_mode = 2
+text = "FPS: 999"
+
+[node name="PeersLabel" type="Label" parent="Data/HBoxContainer" unique_id=1114224629]
+layout_mode = 2
+
+[connection signal="timeout" from="Timer" to="CanvasLayer/TimerLabel" method="_on_timer_timeout"]

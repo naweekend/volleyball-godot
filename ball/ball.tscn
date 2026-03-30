@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://do4gl8fc8vtur"]
+
+[ext_resource type="Script" uid="uid://bppn4ofdimpan" path="res://ball/ball.gd" id="1_6plaf"]
+[ext_resource type="ArrayMesh" uid="uid://u0e423uhpr12" path="res://assets/models/volleyball/10541_volleyball_V1_Iterations-2.obj" id="2_pwunn"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_6plaf"]
+bounce = 0.85
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_pwunn"]
+points = PackedVector3Array(-1.38773, -8.882863, -1.1077495, 1.6630042, 8.867041, 0.8280302, 2.2044246, 8.539771, 2.2044246, -8.268572, 1.3780954, 3.5816662, -2.7607841, 1.3803921, -8.557392, 7.9545965, -2.7408903, 3.565735, 6.8721185, -0.8232764, -6.04712, -0.8298329, -1.6596658, 8.867754, -7.979588, 1.6483332, -4.12773, 6.29022, 5.7436166, -3.553777, -3.5655684, 7.954225, -2.7424808, -0.8233583, 6.047722, 6.87108, -6.8722506, -6.0472364, -0.82156986, 6.290275, 3.5538082, 5.743667, 2.1977093, -6.5896864, -6.04241, -1.9280525, -6.8854084, 5.7858834, 6.0480986, -6.8715086, 0.82168704, -4.6560307, -4.927089, -6.2961063, 1.9281108, 5.7860584, -6.885617, -6.042427, 6.5897045, 2.1977155, 4.379404, -3.8321934, 7.117175, -6.042412, -2.19771, 6.5896883, 8.867212, 0.8297822, -1.6613003, 1.1094714, -1.3877089, -8.882729, -5.2053447, 3.28596, 6.848325, 7.409964, -4.6654058, -2.7428389, 7.6966825, 4.6724324, 1.648182, 2.2045662, 2.2045662, 8.54032, 2.742998, -7.9557247, 3.564522, -4.3736367, 5.190483, -6.284748, -8.5619755, -3.0351062, -0.2751322, -5.7434745, -6.290227, 3.5547495)
+
+[node name="Ball" type="RigidBody3D" unique_id=956571147]
+axis_lock_linear_z = true
+mass = 0.4
+physics_material_override = SubResource("PhysicsMaterial_6plaf")
+script = ExtResource("1_6plaf")
+
+[node name="mesh" type="MeshInstance3D" parent="." unique_id=944296895]
+transform = Transform3D(0.07, 0, 0, 0, 0.07, 0, 0, 0, 0.07, 0, 0, 0)
+mesh = ExtResource("2_pwunn")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1336166343]
+transform = Transform3D(0.07, 0, 0, 0, 0.07, 0, 0, 0, 0.07, 0, 0, 0)
+shape = SubResource("ConvexPolygonShape3D_pwunn")

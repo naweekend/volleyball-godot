@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://cvttcsoe3jl3m"]
+
+[ext_resource type="PackedScene" uid="uid://bnfyy4fvrymac" path="res://network/server_game.tscn" id="1_pejt4"]
+[ext_resource type="Script" uid="uid://b2f8kr0dr4t2s" path="res://game/game_manager.gd" id="2_k6pqd"]
+[ext_resource type="PackedScene" uid="uid://beswfbpke1yb0" path="res://game/ui_overlay.tscn" id="3_7f1ra"]
+
+[node name="ServerMain" type="Node3D" unique_id=1272691978]
+
+[node name="ServerGame" parent="." unique_id=604635633 instance=ExtResource("1_pejt4")]
+
+[node name="GameManager" type="Node" parent="." unique_id=1756015482]
+script = ExtResource("2_k6pqd")
+
+[node name="UIOverlay" parent="." unique_id=1668927484 instance=ExtResource("3_7f1ra")]
+
+[node name="Player2Label" parent="UIOverlay" index="1" unique_id=1138395666]
+anchor_left = 0.656
+anchor_right = 0.78300005
+anchor_bottom = 0.194
+offset_left = 0.15997314
+offset_right = -0.120025635
+offset_bottom = -0.12000275
+
+[editable path="UIOverlay"]
